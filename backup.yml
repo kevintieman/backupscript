@@ -1,0 +1,16 @@
+---
+- name: backup script
+  hosts: all
+  tasks:
+  - name: save config
+    action: "{{ ansible_network_os }}_facts gather_subset=config"
+  - copy:
+       content: "{{ ansible_net_config }}"
+       dest: "./config_backups/{{ inventory_hostname }}.conf"
+    notify: 'config updated'
+       
+  handlers:
+    - name: backup to git
+      run_once: true
+      shell: cd ~/config_backups && git add . && git commit -m 'added backup' && git push origin master
+      listen: 'config updated'
